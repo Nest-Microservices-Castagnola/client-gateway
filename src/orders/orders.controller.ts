@@ -11,7 +11,7 @@ import {
   Logger,
 } from '@nestjs/common';
 
-import { ORDER_SERVICE } from 'src/config';
+import { NATS_SERVICE } from 'src/config';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CreateOrderDto, OrderPaginationDto, StatusDto } from './dto';
 import { firstValueFrom } from 'rxjs';
@@ -20,14 +20,12 @@ import { PaginationDto } from 'src/common';
 @Controller('orders')
 export class OrdersController {
   private readonly logger = new Logger(OrdersController.name);
-  constructor(
-    @Inject(ORDER_SERVICE) private readonly ordersClient: ClientProxy,
-  ) {}
+  constructor(@Inject(NATS_SERVICE) private readonly client: ClientProxy) {}
 
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
     try {
-      return this.ordersClient.send('createOrder', createOrderDto);
+      return this.client.send('createOrder', createOrderDto);
     } catch (error) {
       this.logger.error(error);
       throw new RpcException('Internal Server Error');
@@ -38,7 +36,7 @@ export class OrdersController {
   findAll(@Query() orderPaginationDto: OrderPaginationDto) {
     try {
       console.log(`el all`);
-      return this.ordersClient.send('findAllOrders', orderPaginationDto);
+      return this.client.send('findAllOrders', orderPaginationDto);
     } catch (error) {
       this.logger.error(error);
       throw new RpcException(error);
@@ -48,9 +46,7 @@ export class OrdersController {
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     try {
-      const order = await firstValueFrom(
-        this.ordersClient.send('findOneOrder', id),
-      );
+      const order = await firstValueFrom(this.client.send('findOneOrder', id));
 
       return order;
     } catch (error) {
@@ -65,7 +61,7 @@ export class OrdersController {
     @Query() paginationDto: PaginationDto,
   ) {
     try {
-      return this.ordersClient.send('findAllOrders', {
+      return this.client.send('findAllOrders', {
         ...paginationDto,
         status: statusDto.status,
       });
@@ -82,7 +78,7 @@ export class OrdersController {
   ) {
     try {
       console.log(id);
-      return this.ordersClient.send('updateOrderStatus', {
+      return this.client.send('updateOrderStatus', {
         id,
         status: statusDto.status,
       });

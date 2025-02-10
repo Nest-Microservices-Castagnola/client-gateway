@@ -8,17 +8,15 @@ import { PRODUCT_SERVICE, envs } from 'src/config';
   providers: [],
   imports: [
     ClientsModule.register([
-      
-      { 
-        name: PRODUCT_SERVICE, 
+      {
+        name: PRODUCT_SERVICE,
         transport: Transport.TCP,
         options: {
           host: envs.productsMicroserviceHost,
-          port: envs.productsMicroservicePort
-        }
+          port: envs.productsMicroservicePort,
+        },
       },
-
     ]),
-  ]
+  ],
 })
 export class ProductsModule {}

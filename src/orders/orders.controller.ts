@@ -28,15 +28,19 @@ export class OrdersController {
       return this.client.send('createOrder', createOrderDto);
     } catch (error) {
       this.logger.error(error);
-      throw new RpcException('Internal Server Error');
+      throw new RpcException(error);
     }
   }
 
   @Get()
-  findAll(@Query() orderPaginationDto: OrderPaginationDto) {
+  async findAll(
+    @Query() orderPaginationDto: OrderPaginationDto,
+  ): Promise<OrderPaginationDto> {
     try {
-      console.log(`el all`);
-      return this.client.send('findAllOrders', orderPaginationDto);
+      const orders: OrderPaginationDto = await firstValueFrom(
+        this.client.send('findAllOrders', orderPaginationDto),
+      );
+      return orders;
     } catch (error) {
       this.logger.error(error);
       throw new RpcException(error);
